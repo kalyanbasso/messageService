@@ -63,10 +63,33 @@ client.on('message', async msg => {
                     }
                 }
                 lista = lista.replace(`@${contact.number}`, `${contact.pushname} \u2705`)
-                console.log(mentions);
+                
                 await chat.sendMessage(lista, { mentions });
             } else {
-                msg.reply('É necessário responder uma listas!');
+                msg.reply('É necessário responder uma lista!');
+            }
+        } else {
+            msg.reply('Este comando só pode ser usado em grupos!');
+        }
+    } else if (msg.body === '!discordar' || msg.body === '!rejeita') {
+        const chat = await msg.getChat();
+        if (chat.isGroup) {
+            if(msg.hasQuotedMsg){
+                const quotedMsg = await msg.getQuotedMessage();
+                const contact = await msg.getContact();
+
+                var lista = quotedMsg.body
+                var mentions = [];
+                for(let mention of quotedMsg.mentionedIds) {
+                    if(mention.user !== contact.number){
+                        mentions.push({id:mention})
+                    }
+                }
+                lista = lista.replace(`@${contact.number}`, `${contact.pushname} \u274C`)
+                
+                await chat.sendMessage(lista, { mentions });
+            } else {
+                msg.reply('É necessário responder uma lista!');
             }
         } else {
             msg.reply('Este comando só pode ser usado em grupos!');
