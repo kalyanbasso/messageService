@@ -1,6 +1,7 @@
 const SESSION_FILE_PATH = "../../session.json";
 const fs = require('fs');
 const { Client, Location, List, Buttons } = require('whatsapp-web.js');
+const service = require("./service.js")
 
 let sessionCfg;
 
@@ -44,70 +45,38 @@ const initialize = () => {
     client.on('message', async msg => {
         console.log('MESSAGE RECEIVED', msg);
 
-        if (msg.body === '!confirmar' || msg.body === '!confirma') {
-            const chat = await msg.getChat();
-            if (chat.isGroup) {
-                if(msg.hasQuotedMsg){
-                    const quotedMsg = await msg.getQuotedMessage();
-                    const contact = await msg.getContact();
-
-                    var lista = quotedMsg.body
-                    var lista_aux = lista
-                    var mentions = [];
-                    for(let mention of quotedMsg.mentionedIds) {
-                        if(mention.user !== contact.number){
-                            mentions.push({id:mention})
-                        }
-                    }
-                    lista = lista.replace(`@${contact.number}`, `${contact.pushname} \u2705`)
-                    
-                    if(lista !== lista_aux){
-                        await chat.sendMessage(lista, { mentions });
-                    } else {
-                        lista = lista.replace(`${contact.pushname} \u274C`, `${contact.pushname} \u2705`)
-                        if(lista !== lista_aux){
-                            await chat.sendMessage(lista, { mentions });
-                        }
-                    }
-
-                    
-                } else {
-                    msg.reply('É necessário responder uma lista!');
-                }
-            } else {
-                msg.reply('Este comando só pode ser usado em grupos!');
+        if(msg.body.toLocaleLowerCase() === 'info cargas'){
+            const contact = await msg.getContact();
+            const response = await service.getInfo(0, contact.number);
+            
+            if(response){
+                let rascunho = `Cargas:\n${response.nao_iniciado} = Não Iniciada\n` +
+                `${response.na_unidade} = Na Unidade\n` +
+                `${response.descarga} = Em Descarga\n` +
+                `${response.atrasado} = Atrasada\n` +
+                `${response.em_andamento} = Em Andamento\n` +
+                `${response.finalizado} = Finalizada`
+                msg.reply(rascunho);
             }
-        } else if (msg.body === '!discordar' || msg.body === '!rejeita') {
-            const chat = await msg.getChat();
-            if (chat.isGroup) {
-                if(msg.hasQuotedMsg){
-                    const quotedMsg = await msg.getQuotedMessage();
-                    const contact = await msg.getContact();
-
-                    var lista = quotedMsg.body
-                    var lista_aux = lista
-                    var mentions = [];
-                    for(let mention of quotedMsg.mentionedIds) {
-                        if(mention.user !== contact.number){
-                            mentions.push({id:mention})
-                        }
-                    }
-                    lista = lista.replace(`@${contact.number}`, `${contact.pushname} \u274C`)
-                    
-                    if(lista !== lista_aux){
-                        await chat.sendMessage(lista, { mentions });
-                    } else {
-                        lista = lista.replace(`${contact.pushname} \u2705`, `${contact.pushname} \u274C`)
-                        if(lista !== lista_aux){
-                            await chat.sendMessage(lista, { mentions });
-                        }
-                    }
-                } else {
-                    msg.reply('É necessário responder uma lista!');
-                }
-            } else {
-                msg.reply('Este comando só pode ser usado em grupos!');
+            
+        } else if (msg.body.toLocaleLowerCase() === 'info veiculos') {
+            const contact = await msg.getContact();
+            const response = await service.getInfo(1, contact.number);
+            
+            if(response){
+                let rascunho = `Cargas:\n` + 
+                `${response.comalerta} = Com Alerta\n` +
+                `${response.semcarga} = Sem Carga\n` +
+                `${response.emcarga} = Com Carga\n` +
+                `${response.offpos} = Sem Posição\n` +
+                `${response.offtemp} = Sem Temperatura`
+                msg.reply(rascunho);
             }
+        } else if (msg.body.toLocaleLowerCase().indexOf("info") !== -1) {
+            rascunho = "Info necessita de um parametro\n" +
+            "info cargas = informações de cargas\n" +
+            "info veiculos = informações de veículos"
+            msg.reply(rascunho);
         }
     });
 
@@ -183,10 +152,8 @@ const sendMessage = async (number = null, text = null) => {
     number = number.replace('@c.us', '');
     number = `${number}@c.us`
     const message = text;
-    const chat = await client.getChats();
-    console.log(chat);
-
-    // client.sendMessage(number, message);
+    
+    client.sendMessage(number, message);
 }
 
 module.exports = {
