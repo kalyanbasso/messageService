@@ -17,7 +17,6 @@ module.exports = app => {
     }
 
     controller.sendMessageTelegram = function(req, res) {
-        console.log(req.body);
         var {chatId, message} = req.body;
         telegram.sendMessage(chatId, message)
         res.status(200).json({msg: "ok"});

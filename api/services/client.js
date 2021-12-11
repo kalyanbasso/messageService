@@ -64,7 +64,7 @@ const initialize = () => {
             const response = await service.getInfo(1, contact.number);
             
             if(response){
-                let rascunho = `Cargas:\n` + 
+                let rascunho = `Veiculos:\n` + 
                 `${response.comalerta} = Com Alerta\n` +
                 `${response.semcarga} = Sem Carga\n` +
                 `${response.emcarga} = Com Carga\n` +
